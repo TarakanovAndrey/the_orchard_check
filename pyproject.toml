@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "the-orchard-check"
+version = "0.1.0"
+description = ""
+authors = ["Andrey Tarakanov <andrey.t-krd@yandex.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
