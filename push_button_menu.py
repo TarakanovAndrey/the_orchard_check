@@ -13,8 +13,7 @@ buttons_main_menu = [
                     KeyboardButton(text='Вывести данные')],
                     [KeyboardButton(text='Обновить данные'),
                     KeyboardButton(text='Удалить данные')],
-                    [KeyboardButton(text='Устроить засаду'),
-                    btn_main],
+                    [btn_main],
                 ]
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True,
                                 keyboard=buttons_main_menu)
@@ -38,7 +37,7 @@ week_days_menu = ReplyKeyboardMarkup(resize_keyboard=True,
                                      keyboard=buttons_week_days,
                                      input_field_placeholder="Выберите день недели")
 
-
+'''Added tree menu'''
 buttons_end_input = [
     [KeyboardButton(text="Добавить дерево"),
      KeyboardButton(text="Выбрать другой день")],
@@ -47,3 +46,23 @@ buttons_end_input = [
 
 buttons_end_input_menu = ReplyKeyboardMarkup(resize_keyboard=True,
                                              keyboard=buttons_end_input)
+
+
+'''Updated menu'''
+buttons_update = [
+    [KeyboardButton(text="День недели"),
+     KeyboardButton(text="Название дерева")],
+    [KeyboardButton(text="Количество фруктов"), btn_main]
+]
+
+buttons_updates_menu = ReplyKeyboardMarkup(resize_keyboard=True,
+                                             keyboard=buttons_update)
+
+
+buttons_yes_no = [
+    [KeyboardButton(text="ДА")],
+     [KeyboardButton(text="НЕТ, СОХРАНИТЬ")]
+]
+
+buttons_yes_no_menu = ReplyKeyboardMarkup(resize_keyboard=True,
+                                             keyboard=buttons_yes_no)

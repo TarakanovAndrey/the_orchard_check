@@ -50,13 +50,47 @@ def add_row(client, sheet_name, row):
 
 def get_rows(day):
     df = get_df()
-    rows = df.loc[df['День недели'] == day]
+
+    rows = df.loc[df['День недели'] == day, ["Название дерева", "Количество фруктов"]]
     if rows.empty:
-        return "Данные за этот день отсутствуют в таблице"
+        return False
 
-    return rows.to_string(columns=["Название дерева", "Количество фруктов"],
-                          index=False,
-                          justify="inherit",
-                          col_space = [10, 10]
-                          )
+    return rows.to_string(index=False, header=False)
 
+
+def get_row_by_day_tree(day, tree):
+    df = get_df()
+    result = df.loc[(df['День недели'] == day) & (df['Название дерева'] == tree)]
+    if result.empty:
+        return False
+
+    return result.to_string(index=False, header=False)
+
+
+def is_exist(day, trees):
+    df = get_df()
+    result = df.loc[(df['День недели'] == day) & (df['Название дерева'] == trees)]
+    return result.empty
+
+
+def update_row(sheet_name: str, new_values: dict):
+    sheet = client.open(sheet_name).sheet1
+    data = sheet.get_all_records()
+    for row_index, row in enumerate(data):
+        if row['День недели'] == new_values['updates_day'] and row['Название дерева'] == new_values['updates_tree']:
+            if new_values.get('updates_new_day'):
+                sheet.update_cell(row_index+2, 1, new_values['updates_new_day'])
+            if new_values.get('updates_new_tree'):
+                sheet.update_cell(row_index+2, 2, new_values['updates_new_tree'])
+            if new_values.get('updates_new_count'):
+                sheet.update_cell(row_index+2, 3, new_values['updates_new_count'])
+
+
+items = {'updates_day': 'Четверг',
+         'updates_tree': 'Бук',
+         # 'updates_new_day': 'Четверг',
+         'updates_new_tree': 'Древень',
+         # 'updates_new_count': '100'
+         }
+
+print(update_row(os.environ.get("GOOGLE_SHEET_NAME"), items))
