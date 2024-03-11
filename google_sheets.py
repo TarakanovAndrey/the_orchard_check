@@ -14,7 +14,7 @@ MY_GMAIL = os.environ.get("MY_GMAIL")
 
 
 def authorization(scope):
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', SCOPE)
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
     gc = gspread.authorize(credentials)
     return gc
 
@@ -50,7 +50,7 @@ def get_df():
     return df
 
 
-def add_row(client, sheet_name, row):
+def add_row(row):
     sheet = get_sheets(SHEETS_NAME)
     sheet.append_row(row)
 
@@ -81,7 +81,7 @@ def is_exist(day, trees):
     return result.empty
 
 
-def update_row(sheet_name: str, new_values: dict):
+def update_row(new_values: dict):
     sheet = get_sheets(SHEETS_NAME)
     data = sheet.get_all_records()
     for row_index, row in enumerate(data):
@@ -94,7 +94,7 @@ def update_row(sheet_name: str, new_values: dict):
                 sheet.update_cell(row_index+2, 3, new_values['updates_new_count'])
 
 
-def clear_table(sheet_name):
+def clear_table():
     sheet = get_sheets(SHEETS_NAME)
     rows_count = sheet.row_count
     sheet.delete_rows(2, rows_count)

@@ -1,8 +1,5 @@
 from aiogram.types.reply_keyboard_markup import ReplyKeyboardMarkup
 from aiogram.types.keyboard_button import KeyboardButton
-from aiogram import types
-
-
 
 
 btn_main = KeyboardButton(text="Главное меню")
@@ -15,10 +12,9 @@ buttons_main_menu = [
                     KeyboardButton(text='Удалить данные')],
                     [btn_main],
                 ]
+
 main_menu = ReplyKeyboardMarkup(resize_keyboard=True,
                                 keyboard=buttons_main_menu)
-
-
 
 
 '''Week days menu'''
@@ -36,6 +32,7 @@ buttons_week_days = [
 week_days_menu = ReplyKeyboardMarkup(resize_keyboard=True,
                                      keyboard=buttons_week_days,
                                      input_field_placeholder="Выберите день недели")
+
 
 '''Added tree menu'''
 buttons_end_input = [
