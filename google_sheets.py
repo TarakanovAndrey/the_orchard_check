@@ -4,23 +4,25 @@ import gspread
 import pandas as pd
 from oauth2client.service_account import ServiceAccountCredentials
 
+
 load_dotenv()
 
-def get_df():
-    scope = ['https://spreadsheets.google.com/feeds',
-             'https://www.googleapis.com/auth/drive']
+
+SCOPE = os.environ.get('SCOPES')
+SHEETS_NAME = os.environ.get("GOOGLE_SHEET_NAME")
+MY_GMAIL = os.environ.get("MY_GMAIL")
 
 
-    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', scope)
-
+def authorization(scope):
+    credentials = ServiceAccountCredentials.from_json_keyfile_name('creds.json', SCOPE)
     gc = gspread.authorize(credentials)
-    wks = gc.open("MyOrchard").sheet1
+    return gc
 
-    data = wks.get_all_values()
-    headers = data.pop(0)
 
-    df = pd.DataFrame(data, columns=headers)
-    return df
+def get_sheets(sheets_name):
+    gc = authorization(SCOPE)
+    wks = gc.open(sheets_name).sheet1
+    return wks
 
 
 def create_google_sheet(client, sheet_name):
@@ -28,30 +30,35 @@ def create_google_sheet(client, sheet_name):
     try:
         google_sheet = client.create(sheet_name)
         google_sheet.share(
-            "smallniels@gmail.com",
+            MY_GMAIL,
             perm_type='user',
             role='writer'
         )
-        sheet = client.open(sheet_name).sheet1
+        sheet = get_sheets(SHEETS_NAME)
         sheet.append_row(["День недели", "Название дерева", "Количество фруктов"])
-        print("Success")
+        print("Таблица успешно создана")
     except Exception as e:
         print(e)
         return google_sheet
 
 
-client = gspread.service_account(filename="creds.json")
+def get_df():
+    wks = get_sheets(SHEETS_NAME)
+    data = wks.get_all_values()
+    headers = data.pop(0)
+    df = pd.DataFrame(data, columns=headers)
+    return df
 
 
 def add_row(client, sheet_name, row):
-    sheet = client.open(sheet_name).sheet1
+    sheet = get_sheets(SHEETS_NAME)
     sheet.append_row(row)
 
 
 def get_rows(day):
     df = get_df()
-
     rows = df.loc[df['День недели'] == day, ["Название дерева", "Количество фруктов"]]
+
     if rows.empty:
         return False
 
@@ -61,6 +68,7 @@ def get_rows(day):
 def get_row_by_day_tree(day, tree):
     df = get_df()
     result = df.loc[(df['День недели'] == day) & (df['Название дерева'] == tree)]
+
     if result.empty:
         return False
 
@@ -74,7 +82,7 @@ def is_exist(day, trees):
 
 
 def update_row(sheet_name: str, new_values: dict):
-    sheet = client.open(sheet_name).sheet1
+    sheet = get_sheets(SHEETS_NAME)
     data = sheet.get_all_records()
     for row_index, row in enumerate(data):
         if row['День недели'] == new_values['updates_day'] and row['Название дерева'] == new_values['updates_tree']:
@@ -86,11 +94,13 @@ def update_row(sheet_name: str, new_values: dict):
                 sheet.update_cell(row_index+2, 3, new_values['updates_new_count'])
 
 
-items = {'updates_day': 'Четверг',
-         'updates_tree': 'Бук',
-         # 'updates_new_day': 'Четверг',
-         'updates_new_tree': 'Древень',
-         # 'updates_new_count': '100'
-         }
+def clear_table(sheet_name):
+    sheet = get_sheets(SHEETS_NAME)
+    rows_count = sheet.row_count
+    sheet.delete_rows(2, rows_count)
 
-print(update_row(os.environ.get("GOOGLE_SHEET_NAME"), items))
+
+def is_datas_exists(sheet_name):
+    sheet = get_sheets(SHEETS_NAME)
+    rows_count = sheet.row_count
+    return rows_count > 1

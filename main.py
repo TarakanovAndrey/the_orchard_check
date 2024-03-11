@@ -3,6 +3,7 @@
 # from aiogram import Dispatcher
 import re
 
+import gspread
 from dotenv import load_dotenv
 import os
 
@@ -14,7 +15,7 @@ import push_button_menu as nav
 # from aiogram import F, Router
 from loguru import logger
 # import pprint as pp
-from google_sheets import create_google_sheet, client, add_row, get_rows, is_exist, update_day_in_row, get_row_by_day_tree
+from google_sheets import create_google_sheet, authorization, add_row, get_rows, is_exist, update_row, get_row_by_day_tree, clear_table, is_datas_exists
 # from aiogram.fsm.storage.memory import MemoryStorage
 # from aiogram.fsm.context import FSMContext
 # from aiogram.fsm.state import State, StatesGroup
@@ -50,7 +51,7 @@ from aiogram.types import (
 load_dotenv()
 
 
-
+client = authorization(os.environ.get('SCOPES'))
 
 logger.add(
     os.environ.get("LOG_FILE"),
@@ -88,6 +89,8 @@ class UpdateDatasForm(StatesGroup):
     updates_new_count = State()
 
 
+class ClearDatasForm(StatesGroup):
+    wait_answer_by_delete = State()
 
 
 
@@ -218,6 +221,15 @@ async def bot_message_output_datas(message: Message, state: FSMContext):
     await message.answer(text='Выберите день недели', reply_markup=nav.week_days_menu)
 
 
+@router.message(lambda message: isinstance(message.text, str), CountByWeekDaysForm.day_datas)
+async def invalid_output_weeks_day(message: Message, state: FSMContext):
+    if (message.text).lower() not in ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']:
+        await state.set_state(CountByWeekDaysForm.day_datas)
+        await message.answer('Вы ввели неверное значение. Выберите день недели из меню', reply_markup=nav.week_days_menu)
+    else:
+        await get_count_fruits_by_day(message, state)
+
+
 @router.message(CountByWeekDaysForm.day_datas)
 async def get_count_fruits_by_day(message: Message, state: FSMContext) -> None:
     rows = get_rows(message.text)
@@ -238,6 +250,15 @@ async def print_update_menu(message: Message, state: FSMContext) -> None:
                          reply_markup=nav.week_days_menu)
 
 
+@router.message(lambda message: isinstance(message.text, str), UpdateDatasForm.updates_day)
+async def invalid_updates_weeks_day(message: Message, state: FSMContext):
+    if (message.text).lower() not in ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье']:
+        await state.set_state(UpdateDatasForm.updates_day)
+        await message.answer('Вы ввели неверное значение. Выберите день недели из меню', reply_markup=nav.week_days_menu)
+    else:
+        await get_datas_by_day(message, state)
+
+
 @router.message(UpdateDatasForm.updates_day)
 async def get_datas_by_day(message: Message, state: FSMContext) -> None:
     rows = get_rows(message.text)
@@ -248,6 +269,7 @@ async def get_datas_by_day(message: Message, state: FSMContext) -> None:
     else:
         await state.set_state(UpdateDatasForm.updates_day)
         await message.answer(text=f'День недели - {message.text}:\nВ таблице нет данных для этого дня. Выберите другой день', reply_markup=nav.week_days_menu)
+
 
 
 @router.message(UpdateDatasForm.updates_tree)
@@ -277,6 +299,10 @@ async def get_param_for_update(message: Message, state: FSMContext) -> None:
     elif message.text == "Количество фруктов":
         await state.set_state(UpdateDatasForm.updates_new_count)
         await message.answer(text="Введите новое значение для количества")
+    elif message.text == "Найти другую строку":
+        await state.set_state(UpdateDatasForm.updates_day)
+        await message.answer(text='Выберите другой день из меню', reply_markup=nav.week_days_menu)
+        await state.clear()
 
 
 @router.message(lambda message: isinstance(message.text, str), UpdateDatasForm.updates_new_day)
@@ -303,9 +329,39 @@ async def get_answer(message: Message, state: FSMContext) -> None:
         await message.answer(text="Выберите новый параметр из меню", reply_markup=nav.buttons_updates_menu)
     elif message.text == 'НЕТ, СОХРАНИТЬ':
         data = await state.get_data()
-        print(data)
-        # await state.clear()
+        update_row(os.environ.get("GOOGLE_SHEET_NAME"), data)
+        await state.clear()
+        await message.answer(text='Данные сохранены', reply_markup=nav.main_menu)
 
+
+###
+# Проверка для названия дерева и наличия новых дня и дерева в таблице
+
+@router.message(lambda message: isinstance(message.text, str), UpdateDatasForm.updates_new_tree)
+async def invalid_new_trees_name(message: Message, state: FSMContext):
+    data = await state.get_data()
+    day_new = None
+    day_current = None
+    if data.get('updates_new_day'):
+        day_new = data['updates_new_day']
+    if data.get('updates_day'):
+        day_current = data['updates_day']
+    trees_name = message.text
+    if bool(re.search('[а-яА-Я]', message.text)) is False:
+        await state.set_state(UpdateDatasForm.updates_new_tree)
+        await message.reply(text="Название лучше сохранить на русском языке. Введите пожалуйст еще раз")
+    elif len(message.text) > 20:
+        await state.set_state(UpdateDatasForm.updates_new_tree)
+        await message.reply(text=f'Данное значение слишком длинное. Установлено ограничение в 20 символов.')
+    elif not day_new and is_exist(day_current, trees_name) is False:
+        await message.reply(f"Эти данные '{day_current} {trees_name}' уже есть в таблице. Выберите другой параметр", reply_markup=nav.buttons_updates_menu)
+        await state.set_state(UpdateDatasForm.wait_input_parametr)
+    elif day_new in data and is_exist(day_new, trees_name) is False:
+        await message.reply(f"Эти данные '{day_new} {trees_name}' уже есть в таблице. Выберите другой параметр", reply_markup=nav.buttons_updates_menu)
+        await state.set_state(UpdateDatasForm.wait_input_parametr)
+    else:
+        await update_by_new_tree(message, state)
+###
 
 @router.message(UpdateDatasForm.updates_new_tree)
 async def update_by_new_tree(message: Message, state: FSMContext) -> None:
@@ -321,6 +377,29 @@ async def update_by_new_count(message: Message, state: FSMContext) -> None:
     await state.update_data(updates_new_count = new_count)
     await state.set_state(UpdateDatasForm.wait_input_answer)
     await message.answer(text="Вы хотите изменить еще какие-либо данные?", reply_markup=nav.buttons_yes_no_menu)
+
+
+'''Очищение таблицы (кроме заголовков)'''
+@router.message(F.text=="Удалить данные")
+async def response_to_delete_datas(message: Message, state: FSMContext) -> None:
+    await message.answer(text="Данное действие приведен к полному удалению всех данных. Вы уверены, что хотите все удалить?", reply_markup=nav.buttons_yes_no_menu)
+    await state.set_state(ClearDatasForm.wait_answer_by_delete)
+
+
+@router.message(ClearDatasForm.wait_answer_by_delete)
+async def clear_datas(message: Message, state: FSMContext):
+    check_data_exists = is_datas_exists(os.environ.get("GOOGLE_SHEET_NAME"))
+    if message.text == "ДА" and check_data_exists:
+        await clear_table(os.environ.get("GOOGLE_SHEET_NAME"))
+        await message.answer(text="Все данные были удалены", reply_markup=nav.main_menu)
+    elif message.text == "ДА" and not check_data_exists:
+        await message.answer(text="Таблица пустая, так как данные еще не вносились", reply_markup=nav.main_menu)
+    elif message.text == "НЕТ, СОХРАНИТЬ":
+        await message.answer(text="Данные не были удалены", reply_markup=nav.main_menu)
+
+    await state.clear()
+
+
 
 
 '''Обработка случая, когда сообщения или команда не существует в боте'''
@@ -342,7 +421,9 @@ async def main():
 
 
 if __name__ == "__main__":
-    # if True:
-    #     create_google_sheet(client, os.environ.get("GOOGLE_SHEET_NAME"))
+    try:
+        sheet = client.open(os.environ.get("GOOGLE_SHEET_NAME"))
+    except gspread.exceptions.SpreadsheetNotFound:
+        create_google_sheet(client, os.environ.get("GOOGLE_SHEET_NAME"))
 
     asyncio.run(main())

@@ -267,3 +267,21 @@
 2024-03-10 22:37:28.966 | INFO     | __main__:bot_message_input_datas:113 - State
 2024-03-10 22:37:44.963 | INFO     | __main__:fruits:181 - Add row
 2024-03-10 22:37:44.963 | INFO     | __main__:fruits:183 - Clear state
+2024-03-11 02:32:15.676 | INFO     | __main__:bot_message_input_datas:117 - State
+2024-03-11 02:32:46.048 | INFO     | __main__:fruits:185 - Add row
+2024-03-11 02:32:46.049 | INFO     | __main__:fruits:187 - Clear state
+2024-03-11 03:36:43.895 | INFO     | __main__:bot_message_input_datas:120 - State
+2024-03-11 03:37:10.547 | INFO     | __main__:fruits:188 - Add row
+2024-03-11 03:37:10.548 | INFO     | __main__:fruits:190 - Clear state
+2024-03-11 03:40:25.933 | INFO     | __main__:bot_message_input_datas:120 - State
+2024-03-11 03:40:48.016 | INFO     | __main__:fruits:188 - Add row
+2024-03-11 03:40:48.016 | INFO     | __main__:fruits:190 - Clear state
+2024-03-11 04:01:34.085 | INFO     | __main__:bot_message_input_datas:120 - State
+2024-03-11 04:01:47.681 | INFO     | __main__:fruits:188 - Add row
+2024-03-11 04:01:47.682 | INFO     | __main__:fruits:190 - Clear state
+2024-03-11 04:08:11.550 | INFO     | __main__:bot_message_input_datas:120 - State
+2024-03-11 04:08:22.359 | INFO     | __main__:fruits:188 - Add row
+2024-03-11 04:08:22.360 | INFO     | __main__:fruits:190 - Clear state
+2024-03-11 04:13:23.100 | INFO     | __main__:bot_message_input_datas:120 - State
+2024-03-11 04:13:46.645 | INFO     | __main__:fruits:188 - Add row
+2024-03-11 04:13:46.647 | INFO     | __main__:fruits:190 - Clear state

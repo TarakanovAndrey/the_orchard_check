@@ -52,7 +52,7 @@ buttons_end_input_menu = ReplyKeyboardMarkup(resize_keyboard=True,
 buttons_update = [
     [KeyboardButton(text="День недели"),
      KeyboardButton(text="Название дерева")],
-    [KeyboardButton(text="Количество фруктов"), btn_main]
+    [KeyboardButton(text="Количество фруктов"), KeyboardButton(text="Найти другую строку")], [btn_main]
 ]
 
 buttons_updates_menu = ReplyKeyboardMarkup(resize_keyboard=True,
