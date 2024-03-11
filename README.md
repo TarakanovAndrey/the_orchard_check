@@ -9,6 +9,12 @@ MY_GMAIL= #  укажите свой электронный адрес на gmai
 SCOPES=https://spreadsheets.google.com/feeds https://www.googleapis.com/auth/drive  
 
 
+## Установка зависимостей  
+В консоли введите команду  
+```commandline
+make install
+```
+
 ## Создание и подключение бота  
 1. Откройте приложение Telegram и в поиске введите @BotFather. Перейдите в бот.
 2. Нажмите на команду /newbot. В строке ввода необходимо ввести название бота.
