@@ -66,7 +66,12 @@ class ClearDatasForm(StatesGroup):
 @router.message(CommandStart())
 async def command_start(message: Message) -> None:
     text = f"Привет, {message.from_user.full_name}!"
-    await message.answer(text=text, reply_markup=nav.main_menu)
+    await message.answer(text=text)
+    await message.answer(text="Я слышал, что из вашего сада стали пропадать фрукты...\n"
+                              "Я помогу вам внимательно контроллировать их количество.\n"
+                              "Меню очень простое и интуитивно понятное.\n"
+                              "Уверен, что вы справитесь. Удачи!",
+                         reply_markup=nav.main_menu)
 
 
 '''Вывод главного меню'''

@@ -316,3 +316,4 @@
 2024-03-11 05:50:08.899 | INFO     | __main__:fruits:170 - Add row
 2024-03-11 05:50:08.901 | INFO     | __main__:fruits:172 - Clear state
 2024-03-11 05:53:18.285 | INFO     | __main__:bot_message_input_datas:90 - State
+2024-03-11 06:32:25.189 | INFO     | __main__:bot_message_input_datas:95 - State
